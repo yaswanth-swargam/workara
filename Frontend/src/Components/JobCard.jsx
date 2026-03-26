@@ -1,42 +1,59 @@
 import React from "react";
 import { MdLocationOn } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
 import Button from "./Button";
 import { BiSave } from "react-icons/bi";
+import api from "../api/axios";
+import Toast from "./Toast";
 
+export default function JobCard({ job ,showToast}) {
+  const { id, job_url, title, company, location } = job ?? {};
 
-export default function JobCard({job}) {
-  // const navigate = useNavigate();
-  const {job_url,title,company,location}=job;
   const handleApply = () => {
-    window.open(job_url, "_blank");
+    if (!job_url) return;
+    window.open(job_url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleSave = async () => {
+    try {
+      await api.post(`/saved-jobs/${id}`);
+      console.log("Saved successfully");
+      showToast("Job saved succesfully!")
+    } catch (e) {
+      console.log(e.response?.data?.message || "Save failed");
+    }
   };
 
   return (
-    <div className="rounded-lg shadow-lg bg-red-200 p-4 flex flex-col gap-4">
-      
-      <div className="flex justify-between items-center">
-        <h3 className="font-bold text-red-500 hover:text-bold shadow-sm">{title}</h3>
+    <div className="group relative overflow-hidden rounded-2xl border border-gray-300 bg-transparent p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
 
-        <div className="flex items-center gap-0 text-gray-700 hover:text-blue-500 hover:shadow-sm hover:-translate-y-[1px]
-        active:translate-y-0 active:shadow-sm">
-          <MdLocationOn />
-          <p>{location}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="truncate text-base font-semibold text-gray-900">
+            {title || "Untitled role"}
+          </h3>
+          <p className="mt-1 truncate text-sm text-gray-600">
+            {company || "Company not provided"}
+          </p>
         </div>
+
+        <button
+          onClick={handleSave}
+          className="h-10 w-10 flex items-center justify-center rounded-lg border bg-white hover:bg-gray-50"
+        >
+          <BiSave className="h-5 w-5" />
+        </button>
       </div>
 
-      <div className="flex justify-between items-center">
-        <h2 className="font-semibold text-gray-800 hover:text-bold">{company}</h2>
-        <div className="flex items-center gap-0 text-gray-700 hover:text-blue-500 hover:shadow-sm hover:-translate-y-[1px]
-        active:translate-y-0 active:shadow-sm">
-            <BiSave />
-          <p>save</p>
+      <div className="mt-4 flex justify-between items-center">
+        <div className="flex items-center gap-2 text-sm text-gray-700">
+          <MdLocationOn />
+          <span>{location || "Location not provided"}</span>
         </div>
+
         <Button onClick={handleApply}>
           Apply
         </Button>
       </div>
-
     </div>
   );
 }
